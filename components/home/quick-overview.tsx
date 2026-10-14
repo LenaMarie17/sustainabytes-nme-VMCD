@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { BarChart3, Bike, Bus, Car, Footprints, Leaf, Sparkles } from 'lucide-react'
+import Link from 'next/link'
+import { BarChart3, Bike, Bus, Car, Footprints, Leaf, Map as MapIcon, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function Co2() {
@@ -12,10 +13,10 @@ function Co2() {
   )
 }
 
-/** Placeholder emission figures (g CO2 per km, per person). Replace with your own data. */
+/** Emission figures (g CO2 per km, per person). Replace '?' with your own data. */
 const routes = [
-  { id: 'car', label: 'Car route', emissions: '~170 g', icon: Car },
-  { id: 'bus', label: 'Bus route', emissions: '~90 g', icon: Bus },
+  { id: 'car', label: 'Car route', emissions: '?', icon: Car },
+  { id: 'bus', label: 'Bus route', emissions: '?', icon: Bus },
   { id: 'bike', label: 'Bike route', emissions: '0 g', icon: Bike },
   { id: 'walk', label: 'Walking route', emissions: '0 g', icon: Footprints },
 ]
@@ -51,31 +52,31 @@ export function QuickOverview() {
         <h2 id="routes-heading" className="sr-only">
           Choose a route
         </h2>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="grid grid-cols-4 gap-2 md:gap-3">
           {routes.map(({ id, label, emissions, icon: Icon }) => {
             const isActive = activeRoute === id
             return (
-              <li key={id}>
+              <li key={id} className="min-w-0">
                 <button
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => setActiveRoute(isActive ? null : id)}
                   className={cn(
-                    'flex w-full items-center gap-4 rounded-2xl border bg-card p-5 text-left shadow-lg shadow-primary/5 transition hover:-translate-y-0.5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40',
+                    'flex h-full w-full flex-col items-center gap-1.5 rounded-xl border bg-card px-2 py-3 text-center shadow-md shadow-primary/5 transition hover:-translate-y-0.5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40 md:flex-row md:gap-3 md:px-4 md:text-left',
                     isActive ? 'border-primary ring-2 ring-primary/40' : 'border-border',
                   )}
                 >
                   <span
                     className={cn(
-                      'flex size-11 shrink-0 items-center justify-center rounded-xl',
+                      'flex size-8 shrink-0 items-center justify-center rounded-lg md:size-9',
                       isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-primary',
                     )}
                   >
-                    <Icon className="size-5" aria-hidden="true" />
+                    <Icon className="size-4" aria-hidden="true" />
                   </span>
-                  <span>
-                    <span className="block font-serif text-lg font-semibold text-foreground">{label}</span>
-                    <span className="block text-sm text-muted-foreground">
+                  <span className="min-w-0">
+                    <span className="block text-xs font-semibold text-foreground md:text-sm">{label}</span>
+                    <span className="block text-[11px] text-muted-foreground md:text-xs">
                       {emissions} <Co2 />
                       /km
                     </span>
@@ -106,6 +107,13 @@ export function QuickOverview() {
               </li>
             ))}
           </ul>
+          <Link
+            href="/map"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-center font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40"
+          >
+            <MapIcon className="size-5" aria-hidden="true" />
+            See campus map
+          </Link>
         </div>
       </div>
     </section>
