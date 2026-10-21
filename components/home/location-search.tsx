@@ -6,11 +6,18 @@ import { CAMPUSES, LOCATIONS, searchLocations, type Location } from '@/lib/locat
 import { cn } from '@/lib/utils'
 
 type LocationSearchProps = {
+  label?: string
+  placeholder?: string
   locations?: Location[]
-  onSelect?: (location: Location) => void
+  onSelect?: (location: Location | null) => void
 }
 
-export function LocationSearch({ locations = LOCATIONS, onSelect }: LocationSearchProps) {
+export function LocationSearch({
+  label,
+  placeholder = 'Search a building, e.g. Appel Commons or Olin Library',
+  locations = LOCATIONS,
+  onSelect,
+}: LocationSearchProps) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -59,10 +66,19 @@ export function LocationSearch({ locations = LOCATIONS, onSelect }: LocationSear
     <div className="w-full">
       <form role="search" onSubmit={(e) => e.preventDefault()} className="relative">
         <label htmlFor={`${listboxId}-input`} className="sr-only">
-          Search campus locations
+          {label ? `${label}: search campus locations` : 'Search campus locations'}
         </label>
         <div className="flex items-center gap-3 rounded-2xl border border-white/40 bg-card/95 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur-md transition focus-within:ring-4 focus-within:ring-accent/60">
-          <Search className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          {label ? (
+            <span
+              aria-hidden="true"
+              className="w-12 shrink-0 text-xs font-semibold uppercase tracking-widest text-primary"
+            >
+              {label}
+            </span>
+          ) : (
+            <Search className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          )}
           <input
             ref={inputRef}
             id={`${listboxId}-input`}
@@ -75,12 +91,13 @@ export function LocationSearch({ locations = LOCATIONS, onSelect }: LocationSear
               open && results[activeIndex] ? `${listboxId}-${results[activeIndex].id}` : undefined
             }
             autoComplete="off"
-            placeholder="Search a building, e.g. Appel Commons or Olin Library"
+            placeholder={placeholder}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
               setActiveIndex(0)
               setOpen(true)
+              if (selected) onSelect?.(null)
               setSelected(null)
             }}
             onFocus={() => setOpen(true)}
@@ -93,6 +110,7 @@ export function LocationSearch({ locations = LOCATIONS, onSelect }: LocationSear
               type="button"
               onClick={() => {
                 setQuery('')
+                if (selected) onSelect?.(null)
                 setSelected(null)
                 setActiveIndex(0)
                 inputRef.current?.focus()
@@ -155,7 +173,7 @@ export function LocationSearch({ locations = LOCATIONS, onSelect }: LocationSear
         )}
       </form>
 
-      <p className="mt-3 text-sm text-white/80" aria-live="polite">
+      <p className="mt-1.5 pl-1 text-xs text-white/80" aria-live="polite">
         {selected
           ? `Selected: ${selected.name}, ${selected.campus} Campus`
           : query

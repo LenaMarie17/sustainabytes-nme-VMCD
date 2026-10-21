@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { BarChart3, Bike, Bus, Car, Footprints, Leaf, Map as MapIcon, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { emissionsFor, formatGrams, type TravelMode } from '@/lib/emissions'
+import { useTrip } from './trip-context'
 
 function Co2() {
   return (
@@ -13,12 +15,11 @@ function Co2() {
   )
 }
 
-/** Emission figures (g CO2 per km, per person). Replace '?' with your own data. */
-const routes = [
-  { id: 'car', label: 'Car route', emissions: '?', icon: Car },
-  { id: 'bus', label: 'Bus route', emissions: '?', icon: Bus },
-  { id: 'bike', label: 'Bike route', emissions: '0 g', icon: Bike },
-  { id: 'walk', label: 'Walking route', emissions: '0 g', icon: Footprints },
+const routes: { id: TravelMode; label: string; icon: typeof Car }[] = [
+  { id: 'car', label: 'Car route', icon: Car },
+  { id: 'bus', label: 'Bus route', icon: Bus },
+  { id: 'bike', label: 'Bike route', icon: Bike },
+  { id: 'walk', label: 'Walking route', icon: Footprints },
 ]
 
 const actions = [
@@ -45,6 +46,7 @@ const actions = [
 
 export function QuickOverview() {
   const [activeRoute, setActiveRoute] = useState<string | null>(null)
+  const { distances } = useTrip()
 
   return (
     <section aria-labelledby="routes-heading" className="mt-12 px-4 md:px-8">
@@ -53,8 +55,9 @@ export function QuickOverview() {
           Choose a route
         </h2>
         <ul className="grid grid-cols-4 gap-2 md:gap-3">
-          {routes.map(({ id, label, emissions, icon: Icon }) => {
+          {routes.map(({ id, label, icon: Icon }) => {
             const isActive = activeRoute === id
+            const emissions = distances ? formatGrams(emissionsFor(id, distances[id])) : '?'
             return (
               <li key={id} className="min-w-0">
                 <button
@@ -78,7 +81,7 @@ export function QuickOverview() {
                     <span className="block text-xs font-semibold text-foreground md:text-sm">{label}</span>
                     <span className="block text-[11px] text-muted-foreground md:text-xs">
                       {emissions} <Co2 />
-                      /km
+                      {distances ? ' this trip' : ''}
                     </span>
                   </span>
                 </button>
