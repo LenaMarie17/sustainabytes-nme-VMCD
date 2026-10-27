@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { siteConfig } from '@/lib/site-config'
 import { SiteHeader } from './site-header'
-import { LocationSearch } from './location-search'
+import { TripSearch } from './trip-search'
 
 export function Hero() {
   return (
@@ -33,7 +33,7 @@ export function Hero() {
         </p>
 
         <div id="explore" className="mt-10 w-full max-w-2xl text-left">
-          <LocationSearch />
+          <TripSearch />
         </div>
       </div>
     </section>
