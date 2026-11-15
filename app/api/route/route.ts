@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { LOCATION_COORDINATES } from '@/lib/location-coordinates'
+import { ALL_COORDINATES as LOCATION_COORDINATES } from '@/lib/location-coordinate-overrides'
 import type { RouteDistances } from '@/lib/emissions'
 
 /**
@@ -19,6 +19,7 @@ async function routeDistance(baseUrl: string, from: [number, number], to: [numbe
   const res = await fetch(`${baseUrl}/${coords}?overview=false`, {
     headers: { 'User-Agent': 'sustainabytes-nme/1.0' },
     next: { revalidate: 60 * 60 * 24 * 7 },
+    signal: AbortSignal.timeout(10_000),
   })
   if (!res.ok) throw new Error(`Routing failed (${res.status})`)
   const data = (await res.json()) as { code: string; routes?: { distance: number }[] }
@@ -30,8 +31,9 @@ async function routeDistance(baseUrl: string, from: [number, number], to: [numbe
 export async function GET(request: NextRequest) {
   const fromId = request.nextUrl.searchParams.get('from') ?? ''
   const toId = request.nextUrl.searchParams.get('to') ?? ''
-  const from = LOCATION_COORDINATES[fromId]
-  const to = LOCATION_COORDINATES[toId]
+  // Object.hasOwn guards against prototype keys like "constructor" being treated as locations.
+  const from = Object.hasOwn(LOCATION_COORDINATES, fromId) ? LOCATION_COORDINATES[fromId] : undefined
+  const to = Object.hasOwn(LOCATION_COORDINATES, toId) ? LOCATION_COORDINATES[toId] : undefined
 
   if (!from || !to) {
     return NextResponse.json({ error: 'Unknown location' }, { status: 400 })
@@ -49,7 +51,10 @@ export async function GET(request: NextRequest) {
     const distances: RouteDistances = { car, bus: car, bike, walk }
     return NextResponse.json(distances)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Routing failed'
+    const message =
+      error instanceof Error && error.message === 'No route found'
+        ? 'No route found between these locations.'
+        : 'The routing service is unavailable right now. Please try again.'
     return NextResponse.json({ error: message }, { status: 502 })
   }
 }
