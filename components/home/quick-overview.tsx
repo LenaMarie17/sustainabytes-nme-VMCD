@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import type { TripTally } from '@/app/actions/trips'
-import { BarChart3, Bike, Bus, Car, Footprints, Leaf, Map as MapIcon, Sparkles } from 'lucide-react'
+import { ArrowRight, BarChart3, Bike, Bus, Car, Footprints, Leaf, Map as MapIcon, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { emissionsFor, formatGrams, type TravelMode } from '@/lib/emissions'
 import { useTrip } from './trip-context'
@@ -23,8 +23,14 @@ const routes: { id: TravelMode; label: string; icon: typeof Car }[] = [
 ]
 
 const actions = [
-  { title: <>Travel data</>, description: 'Distance, time and emissions for your trips.', icon: BarChart3 },
   {
+    href: '/travel-data',
+    title: <>Travel data</>,
+    description: 'Distance, time and emissions for your trips.',
+    icon: BarChart3,
+  },
+  {
+    href: '/co2-saved',
     title: (
       <>
         <Co2 /> saved by not driving
@@ -34,6 +40,7 @@ const actions = [
     icon: Leaf,
   },
   {
+    href: '/co2-impact',
     title: (
       <>
         See what your saved <Co2 /> can do
@@ -93,9 +100,12 @@ export function QuickOverview({ tally }: { tally: TripTally }) {
           <h2 className="font-serif text-2xl font-semibold text-foreground md:text-3xl">Your impact</h2>
           <p className="mt-1 text-muted-foreground">See how your travel choices add up.</p>
           <ul className="mt-6 grid gap-4 md:grid-cols-3">
-            {actions.map(({ title, description, icon: Icon }, i) => (
-              <li key={i}>
-                <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6">
+            {actions.map(({ href, title, description, icon: Icon }, i) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40"
+                >
                   <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
@@ -115,9 +125,12 @@ export function QuickOverview({ tally }: { tally: TripTally }) {
                       </p>
                     </div>
                   ) : (
-                    <span className="mt-4 text-sm font-medium text-muted-foreground">Coming soon</span>
+                    <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                      Explore your impact
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                    </span>
                   )}
-                </div>
+                </Link>
               </li>
             ))}
           </ul>
