@@ -1,7 +1,7 @@
 'use client'
 
-import { Bike, Car, Footprints, Loader2, RotateCcw, Route } from 'lucide-react'
-import { formatDistance } from '@/lib/emissions'
+import { Bike, Bookmark, Car, Check, Footprints, Loader2, RotateCcw, Route } from 'lucide-react'
+import { emissionsFor, formatDistance, formatGrams, type TravelMode } from '@/lib/emissions'
 import { LocationSearch } from './location-search'
 import { useTrip } from './trip-context'
 
@@ -69,9 +69,65 @@ export function TripSearch() {
               <DistanceItem icon={Bike} label="Bike (roads)" metres={distances.bike} />
               <DistanceItem icon={Footprints} label="Walking (roads & paths)" metres={distances.walk} />
             </dl>
+            <SaveRoute />
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+const MODE_LABELS: Record<TravelMode, string> = {
+  car: 'Car',
+  bus: 'Bus',
+  bike: 'Bike',
+  walk: 'Walking',
+}
+
+function SaveRoute() {
+  const { distances, mode, saving, saveStatus, save } = useTrip()
+  if (!distances) return null
+  const saved = mode ? Math.max(0, emissionsFor('car', distances.car) - emissionsFor(mode, distances[mode])) : 0
+
+  return (
+    <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-muted-foreground">
+        {mode ? (
+          <>
+            <span className="font-semibold text-foreground">{MODE_LABELS[mode]}</span> saves{' '}
+            <span className="font-semibold text-primary">{formatGrams(saved)}</span> CO
+            <sub className="text-[0.7em]">2</sub> vs. driving.
+          </>
+        ) : (
+          'Pick a route below, then save it to add to your tally.'
+        )}
+      </p>
+      <button
+        type="button"
+        onClick={save}
+        disabled={!mode || saving || saveStatus?.kind === 'success'}
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {saving ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+        ) : saveStatus?.kind === 'success' ? (
+          <Check className="size-4" aria-hidden="true" />
+        ) : (
+          <Bookmark className="size-4" aria-hidden="true" />
+        )}
+        {saving ? 'Saving…' : saveStatus?.kind === 'success' ? 'Saved' : 'Save route'}
+      </button>
+      {saveStatus && (
+        <p
+          className={
+            saveStatus.kind === 'success'
+              ? 'text-sm font-medium text-primary sm:basis-full'
+              : 'text-sm font-medium text-destructive sm:basis-full'
+          }
+        >
+          {saveStatus.message}
+        </p>
+      )}
     </div>
   )
 }

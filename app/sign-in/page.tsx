@@ -1,0 +1,18 @@
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { AuthForm } from '@/components/auth/auth-form'
+import { AuthShell } from '@/components/auth/auth-shell'
+import { getSession } from '@/lib/session'
+
+export const metadata: Metadata = { title: 'Log in | Sustainabytes NME' }
+
+export default async function SignInPage() {
+  const session = await getSession()
+  if (session?.user) redirect('/')
+
+  return (
+    <AuthShell title="Welcome back" subtitle="Log in to track the CO₂ you save around campus.">
+      <AuthForm mode="sign-in" />
+    </AuthShell>
+  )
+}

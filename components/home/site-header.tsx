@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { Bell, Leaf } from 'lucide-react'
 import { siteConfig } from '@/lib/site-config'
+import { SignOutButton } from './sign-out-button'
 
-export function SiteHeader() {
+export function SiteHeader({ userName }: { userName: string }) {
   return (
     <header className="relative z-10">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 md:px-8">
@@ -37,11 +38,14 @@ export function SiteHeader() {
             <span className="sr-only">Notifications</span>
           </button>
           <span
+            role="img"
             className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground ring-2 ring-white/30"
-            aria-label={`Signed in as ${siteConfig.userName}`}
+            aria-label={`Signed in as ${userName}`}
+            title={`Signed in as ${userName}`}
           >
-            {siteConfig.userName.charAt(0).toUpperCase()}
+            {userName.charAt(0).toUpperCase()}
           </span>
+          <SignOutButton />
         </div>
       </div>
     </header>
