@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 import type { Location } from '@/lib/locations'
 import type { RouteDistances } from '@/lib/emissions'
 
@@ -26,17 +26,24 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resetKey, setResetKey] = useState(0)
+  // Incremented whenever inputs change so a slow, outdated response is ignored.
+  const requestId = useRef(0)
+
+  function invalidate() {
+    requestId.current += 1
+    setDistances(null)
+    setError(null)
+    setLoading(false)
+  }
 
   function setFrom(location: Location | null) {
     setFromState(location)
-    setDistances(null)
-    setError(null)
+    invalidate()
   }
 
   function setTo(location: Location | null) {
     setToState(location)
-    setDistances(null)
-    setError(null)
+    invalidate()
   }
 
   async function search() {
@@ -48,27 +55,28 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       setError('Choose two different locations.')
       return
     }
+    const id = ++requestId.current
     setLoading(true)
     setError(null)
     try {
       const params = new URLSearchParams({ from: from.id, to: to.id })
       const res = await fetch(`/api/route?${params}`)
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Could not calculate the route.')
-      setDistances(data as RouteDistances)
+      if (id === requestId.current) setDistances(data as RouteDistances)
     } catch (e) {
+      if (id !== requestId.current) return
       setDistances(null)
       setError(e instanceof Error ? e.message : 'Could not calculate the route.')
     } finally {
-      setLoading(false)
+      if (id === requestId.current) setLoading(false)
     }
   }
 
   function clear() {
     setFromState(null)
     setToState(null)
-    setDistances(null)
-    setError(null)
+    invalidate()
     setResetKey((k) => k + 1)
   }
 

@@ -96,17 +96,21 @@ export function QuickOverview() {
           <ul className="mt-6 grid gap-4 md:grid-cols-3">
             {actions.map(({ title, description, icon: Icon }, i) => (
               <li key={i}>
-                <a
-                  href="#"
-                  className="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
-                >
+                <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6">
                   <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
-                  <span className="mt-4 text-sm font-medium text-primary group-hover:underline">Open</span>
-                </a>
+                  {i === 1 && distances ? (
+                    <p className="mt-4 text-sm font-semibold text-primary">
+                      Walking or biking this trip saves {formatGrams(emissionsFor('car', distances.car))}{' '}
+                      <Co2 /> vs. driving
+                    </p>
+                  ) : (
+                    <span className="mt-4 text-sm font-medium text-muted-foreground">Coming soon</span>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
