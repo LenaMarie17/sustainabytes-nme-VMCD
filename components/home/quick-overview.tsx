@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
+import type { TripTally } from '@/app/actions/trips'
 import { BarChart3, Bike, Bus, Car, Footprints, Leaf, Map as MapIcon, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { emissionsFor, formatGrams, type TravelMode } from '@/lib/emissions'
@@ -44,9 +44,8 @@ const actions = [
   },
 ]
 
-export function QuickOverview() {
-  const [activeRoute, setActiveRoute] = useState<string | null>(null)
-  const { distances } = useTrip()
+export function QuickOverview({ tally }: { tally: TripTally }) {
+  const { distances, mode: activeRoute, setMode: setActiveRoute } = useTrip()
 
   return (
     <section aria-labelledby="routes-heading" className="mt-12 px-4 md:px-8">
@@ -90,7 +89,7 @@ export function QuickOverview() {
           })}
         </ul>
 
-        <div className="mt-14">
+        <div id="saved" className="mt-14 scroll-mt-8">
           <h2 className="font-serif text-2xl font-semibold text-foreground md:text-3xl">Your impact</h2>
           <p className="mt-1 text-muted-foreground">See how your travel choices add up.</p>
           <ul className="mt-6 grid gap-4 md:grid-cols-3">
@@ -102,11 +101,19 @@ export function QuickOverview() {
                   </span>
                   <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
-                  {i === 1 && distances ? (
+                  {i === 0 ? (
                     <p className="mt-4 text-sm font-semibold text-primary">
-                      Walking or biking this trip saves {formatGrams(emissionsFor('car', distances.car))}{' '}
-                      <Co2 /> vs. driving
+                      {tally.trips} {tally.trips === 1 ? 'trip' : 'trips'} saved · {tally.distanceKm.toFixed(2)} km
                     </p>
+                  ) : i === 1 ? (
+                    <div className="mt-4">
+                      <p className="font-serif text-3xl font-semibold text-primary">
+                        {formatGrams(tally.co2SavedGrams)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Total <Co2 /> saved across your saved routes
+                      </p>
+                    </div>
                   ) : (
                     <span className="mt-4 text-sm font-medium text-muted-foreground">Coming soon</span>
                   )}
